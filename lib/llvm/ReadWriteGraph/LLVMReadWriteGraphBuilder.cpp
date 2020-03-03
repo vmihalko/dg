@@ -675,6 +675,7 @@ LLVMReadWriteGraphBuilder::buildFunction(const llvm::Function& F)
     // emplace new subgraph to avoid looping with recursive functions
     auto si = subgraphs_map.emplace(&F, Subgraph());
     Subgraph& subg = si.first->second;
+    subg.rwsubgraph = graph.createSubgraph();
 
     ///
     // Create blocks
@@ -682,7 +683,7 @@ LLVMReadWriteGraphBuilder::buildFunction(const llvm::Function& F)
 
     // iterate over the blocks in dominator-tree order
     // so that all operands are created before their uses
-    for (const auto llvmBlock :
+    for (const auto *llvmBlock :
               getBasicBlocksInDominatorOrder(const_cast<llvm::Function&>(F))) {
 
         auto& block = buildBlock(subg, *llvmBlock);
@@ -1069,14 +1070,15 @@ ReadWriteGraph&& LLVMReadWriteGraphBuilder::build()
     // get entry function
     llvm::Function *F = M->getFunction(_options.entryFunction);
     if (!F) {
-        llvm::errs() << "The function '" << _options.entryFunction << "' was not found in the module\n";
+        llvm::errs() << "The function '" << _options.entryFunction
+                     << "' was not found in the module\n";
         abort();
     }
 
     // first we must build globals, because nodes can use them as operands
     auto glob = buildGlobals();
 
-    // now we can build rest of the graph
+    // now we can build the rest of the stuff
     auto& subg = buildFunction(*F);
     assert(subg.entry && "Do not have an entry block of the entry function");
     assert(!subg.entry->nodes.empty() && "The entry block is empty");
@@ -1116,7 +1118,7 @@ ReadWriteGraph&& LLVMReadWriteGraphBuilder::build()
         matchForksAndJoins();
     }
 
-    graph.setRoot(root);
+    graph.setEntry(root);
 
     // we must perform this because the sparse algorithm assumes
     // that every node has a block and that is the case
