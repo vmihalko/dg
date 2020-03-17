@@ -13,6 +13,7 @@ namespace dg {
 namespace dda {
 
 class RWNode;
+class RWSubgraph;
 class ReachingDefinitionsAnalysis;
 
 // here the types are for type-checking (optional - user can do it
@@ -37,8 +38,6 @@ enum class RWNodeType {
         RETURN,
         // call node
         CALL,
-        // return from the call (in caller)
-        CALL_RETURN,
         FORK,
         JOIN,
         // dummy nodes
@@ -53,8 +52,6 @@ class RWNode : public SubgraphNode<RWNode> {
     RWNodeType type;
 
     RWBBlock *bblock = nullptr;
-    // marks for DFS/BFS
-    unsigned int dfsid;
 
     class DefUses {
         using T = std::vector<RWNode *>;
@@ -87,13 +84,15 @@ class RWNode : public SubgraphNode<RWNode> {
     };
 
 public:
+    // marks for DFS/BFS
+    unsigned int dfsid{0};
 
     // for invalid nodes like UNKNOWN_MEMLOC
     RWNode(RWNodeType t = RWNodeType::NONE)
-    : SubgraphNode<RWNode>(0), type(t), dfsid(0) {}
+    : SubgraphNode<RWNode>(0), type(t) {}
 
     RWNode(unsigned id, RWNodeType t = RWNodeType::NONE)
-    : SubgraphNode<RWNode>(id), type(t), dfsid(0) {}
+    : SubgraphNode<RWNode>(id), type(t) {}
 
 #ifndef NDEBUG
     virtual ~RWNode() = default;
@@ -121,7 +120,7 @@ public:
     DefSiteSetT& getOverwrites() { return overwrites; }
     DefSiteSetT& getUses() { return uses; }
     const DefSiteSetT& getDefines() const { return defs; }
-    const DefSiteSetT& getOverwrites() const { return defs; }
+    const DefSiteSetT& getOverwrites() const { return overwrites; }
     const DefSiteSetT& getUses() const { return uses; }
 
     bool defines(RWNode *target, const Offset& off = Offset::UNKNOWN) const
@@ -232,6 +231,88 @@ public:
 
     friend class ReadWriteGraph;
 };
+
+// we may either call a properly defined function
+// or a function that is undefined and we
+// have just a model for it.
+class RWCalledValue {
+    RWSubgraph *subgraph{nullptr};
+    RWNode *calledValue{nullptr};
+
+public:
+    RWCalledValue(RWSubgraph *s) : subgraph(s) {}
+    RWCalledValue(RWNode *c) : calledValue(c) {}
+
+    bool callsUndefined() const { return calledValue != nullptr; }
+
+    RWSubgraph *getSubgraph() { return subgraph; }
+    RWNode *getCalledValue() { return calledValue; }
+    const RWSubgraph *getSubgraph() const { return subgraph; }
+    const RWNode *getCalledValue() const { return calledValue; }
+};
+
+class RWNodeCall : public RWNode {
+    // what this call calls?
+    using CalleesT = std::vector<RWCalledValue>;
+    CalleesT callees;
+
+    //RWNode *callReturn{nullptr};
+
+public:
+    RWNodeCall(unsigned id) : RWNode(id, RWNodeType::CALL) {}
+
+    static RWNodeCall *get(RWNode *n) {
+        return (n->getType() == RWNodeType::CALL) ?
+            static_cast<RWNodeCall*>(n) : nullptr;
+    }
+
+    static const RWNodeCall *get(const RWNode *n) {
+        return (n->getType() == RWNodeType::CALL) ?
+            static_cast<const RWNodeCall*>(n) : nullptr;
+    }
+
+    /*
+    void setCallReturn(RWNode *callRet) { callReturn = callRet; }
+    RWNode *getCallReturn() { return callReturn; }
+    const RWNode *getCallReturn() const { return callReturn; }
+    */
+
+    const CalleesT& getCallees() const { return callees; }
+
+    void addCallee(const RWCalledValue& cv) { callees.push_back(cv); }
+    void addCallee(RWNode *n) { callees.emplace_back(n); }
+    void addCallee(RWSubgraph *s) { callees.emplace_back(s); }
+};
+
+class RWNodeRet : public RWNode {
+    // this node returns control to...
+    std::vector<RWNode *> returns;
+
+public:
+    RWNodeRet(unsigned id)
+    :RWNode(id, RWNodeType::RETURN) {}
+
+    static RWNodeRet *get(RWNode *n) {
+        return n->getType() == RWNodeType::RETURN ?
+            static_cast<RWNodeRet *>(n) : nullptr;
+    }
+
+    const std::vector<RWNode*>& getReturnSites() const { return returns; }
+
+    bool addReturnSite(RWNode *r) {
+        // we suppose there are just few callees,
+        // so this should be faster than std::set
+        for (RWNode *p : returns) {
+            if (p == r)
+                return false;
+        }
+
+        returns.push_back(r);
+        return true;
+    }
+};
+
+
 
 } // namespace dda
 } // namespace dg

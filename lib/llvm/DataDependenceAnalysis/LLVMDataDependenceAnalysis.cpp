@@ -27,12 +27,7 @@ LLVMDataDependenceAnalysis::~LLVMDataDependenceAnalysis() {
 
 LLVMReadWriteGraphBuilder *LLVMDataDependenceAnalysis::createBuilder() {
     assert(m && pta);
-    if (_options.isSSA()) {
-        return new LLVMReadWriteGraphBuilder(m, pta, _options);
-    } else {
-        return new LLVMReadWriteGraphBuilder(m, pta, _options,
-                                             true /* forget locals at return */);
-    }
+    return new LLVMReadWriteGraphBuilder(m, pta, _options);
 }
 
 DataDependenceAnalysis *LLVMDataDependenceAnalysis::createDDA() {
@@ -51,11 +46,8 @@ const RWNode *LLVMDataDependenceAnalysis::getNode(const llvm::Value *val) const 
     return builder->getNode(val);
 }
 
-// let the user get the nodes map, so that we can
-// map the points-to informatio back to LLVM nodes
-const std::unordered_map<const llvm::Value *, RWNode *>&
-LLVMDataDependenceAnalysis::getNodesMap() const {
-    return builder->getNodesMap();
+const llvm::Value *LLVMDataDependenceAnalysis::getValue(const RWNode *node) const {
+    return builder->getValue(node);
 }
 
 std::vector<llvm::Value *>
