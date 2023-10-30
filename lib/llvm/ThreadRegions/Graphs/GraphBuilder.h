@@ -49,7 +49,22 @@ class GraphBuilder {
     std::unordered_map<const llvm::CallInst *, UnlockNode *> llvmToUnlocks_;
 
   public:
-    using NodeSequence = std::pair<Node *, Node *>;
+    // using NodeSequence = std::pair<Node *, Node *>;
+
+    class NodeSequence {
+        Node *callNode_;
+
+      public:
+        Node *first;
+        Node *second;
+
+        NodeSequence() : callNode_(nullptr), first(nullptr), second(nullptr) {}
+
+        NodeSequence(Node *first, Node *second, Node *callNode = nullptr)
+                : callNode_(callNode), first(first), second(second) {}
+
+        void addSuccessor(Node *successor);
+    };
 
     GraphBuilder(dg::DGLLVMPointerAnalysis *pointsToAnalysis);
 
