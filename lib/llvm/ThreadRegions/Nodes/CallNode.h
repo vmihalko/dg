@@ -13,7 +13,7 @@ class CallNode : public Node {
     bool setCallSuccessor(Node *callSuccessor);
     Node *getCallSuccessor() const;
 
-    void printOutcomingEdges(std::ostream &ostream) const override;
+    std::set<Node *> directSuccessors() const override;
 };
 
 #endif // CALLNODE_H

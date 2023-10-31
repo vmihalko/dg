@@ -66,6 +66,36 @@ size_t Node::predecessorsNumber() const { return predecessors_.size(); }
 
 size_t Node::successorsNumber() const { return predecessors_.size(); }
 
+void Node::addCallPredecessor(Node *node) {
+    directCallPredecessors_.insert(node);
+}
+
+std::set<Node *> Node::directPredecessors() const {
+    std::set<Node *> res;
+
+    if (getType() == NodeType::ENTRY) {
+        return res;
+    }
+
+    for (auto *pred : predecessors()) {
+        if (pred->getType() == NodeType::EXIT) {
+            continue;
+        }
+
+        res.insert(pred);
+    }
+
+    for (auto *pred : directCallPredecessors_) {
+        res.insert(pred);
+    }
+
+    return res;
+}
+
+std::set<Node *> Node::directSuccessors() const {
+    return successors();
+}
+
 bool Node::isArtificial() const { return llvmInstruction_ == nullptr; }
 
 const Instruction *Node::llvmInstruction() const { return llvmInstruction_; }
@@ -100,5 +130,9 @@ string Node::label() const {
 void Node::printOutcomingEdges(ostream &ostream) const {
     for (const auto &successor : successors_) {
         ostream << this->dotName() << " -> " << successor->dotName() << "\n";
+    }
+
+    for (auto *directSuccessor : directSuccessors()) {
+        ostream << this->dotName() << " -> " << directSuccessor->dotName() << " [color=\"red\"]\n";
     }
 }

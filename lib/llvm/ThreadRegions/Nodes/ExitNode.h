@@ -23,6 +23,8 @@ class ExitNode : public Node {
 
     std::size_t successorsNumber() const override;
 
+    std::set<Node *> directSuccessors() const override;
+
     void printOutcomingEdges(std::ostream &ostream) const override;
 
     friend class JoinNode;

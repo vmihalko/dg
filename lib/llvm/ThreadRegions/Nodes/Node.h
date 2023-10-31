@@ -59,6 +59,8 @@ class Node {
     std::set<Node *> predecessors_;
     std::set<Node *> successors_;
 
+    std::set<Node *> directCallPredecessors_;
+
     static int lastId;
 
   public:
@@ -88,6 +90,14 @@ class Node {
 
     virtual std::size_t predecessorsNumber() const;
     virtual std::size_t successorsNumber() const;
+
+    // the ones in the same procedure; the behaviour is different
+    // around forks, calls etc.
+    void addCallPredecessor(Node *node);
+
+    // maybe use a vector instead? I will probably only use it in for loops
+    std::set<Node *> directPredecessors() const;
+    virtual std::set<Node *> directSuccessors() const;
 
     bool isArtificial() const;
 

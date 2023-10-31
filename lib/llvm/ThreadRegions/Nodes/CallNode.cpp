@@ -12,16 +12,16 @@ bool CallNode::setCallSuccessor(Node *callSuccessor) {
     }
 
     callSuccessor_ = callSuccessor;
-    // change all nodes such that they explicitely have these predecessors???
+    callSuccessor_->addCallPredecessor(this);
     return true;
 }
 
 Node *CallNode::getCallSuccessor() const { return callSuccessor_; }
 
-void CallNode::printOutcomingEdges(std::ostream &ostream) const {
-    Node::printOutcomingEdges(ostream);
-    if (callSuccessor_ != nullptr) {
-        ostream << this->dotName() << " -> " << callSuccessor_->dotName()
-                << " [style=dotted]";
+std::set<Node *> CallNode::directSuccessors() const {
+    if (callSuccessor_ == nullptr) {
+        return successors();
     }
+    return { callSuccessor_ };
 }
+
