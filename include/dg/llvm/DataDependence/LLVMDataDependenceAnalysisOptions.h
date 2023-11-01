@@ -46,6 +46,9 @@ struct LLVMDataDependenceAnalysisOptions : public LLVMAnalysisOptions,
         functionModelAddUse("strcpy", {1, Offset(0), Offset::getUnknown()});
         functionModelAddDef("strncpy", {0, Offset(0), 2});
         functionModelAddUse("strncpy", {1, Offset(0), 2});
+
+	functionModelDefinesAllArgs("__isoc99_fscanf");
+	functionModelDefinesAllArgs("fscanf")
     };
 };
 
