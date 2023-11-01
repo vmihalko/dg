@@ -54,6 +54,12 @@ struct LLVMDataDependenceAnalysisOptions : public LLVMAnalysisOptions,
                             {0, Offset(0), Offset::getUnknown()});
         functionModelAddDef("pthread_mutex_destroy",
                             {0, Offset(0), Offset::getUnknown()});
+
+        ///
+        // fscanf
+        ///
+        functionModelDefinesAllArgs("__isoc99_fscanf");
+        functionModelDefinesAllArgs("fscanf");
     };
 };
 

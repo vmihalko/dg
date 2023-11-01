@@ -70,6 +70,9 @@ struct FunctionModel {
     void addDef(const Operand &op) { _defines.emplace(op.operand, op); }
     void addUse(const Operand &op) { _uses.emplace(op.operand, op); }
 
+    void markAllArgsAsDef() { _definesAllArgs = true; }
+    bool definesAllArgs() const { return _definesAllArgs; }
+
     const Operand *defines(unsigned operand) const {
         auto it = _defines.find(operand);
         return it == _defines.end() ? nullptr : &it->second;
@@ -80,11 +83,14 @@ struct FunctionModel {
         return it == _uses.end() ? nullptr : &it->second;
     }
 
-    bool handles(unsigned i) const { return defines(i) || uses(i); }
+    bool handles(unsigned i) const {
+	return defines(i) || uses(i) || _definesAllArgs;
+    }
 
   private:
     std::map<unsigned, Operand> _defines;
     std::map<unsigned, Operand> _uses;
+    bool _definesAllArgs;
 };
 
 namespace dda {
@@ -149,6 +155,13 @@ struct DataDependenceAnalysisOptions : AnalysisOptions {
         if (M.name.empty())
             M.name = name;
         M.addUse(def);
+    }
+
+    void functionModelDefinesAllArgs(const std::string &name) {
+        auto &M = functionModels[name];
+        if (M.name.empty())
+            M.name = name;
+        M.markAllArgsAsDef();
     }
 };
 
