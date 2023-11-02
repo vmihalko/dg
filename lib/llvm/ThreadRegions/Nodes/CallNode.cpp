@@ -6,22 +6,17 @@ CallNode::CallNode(const llvm::Instruction *instruction,
                    const llvm::CallInst *callInst)
         : Node(NodeType::CALL, instruction, callInst) {}
 
-bool CallNode::setCallSuccessor(Node *callSuccessor) {
-    if (callSuccessor_ != nullptr) {
-        return false;
-    }
-
-    callSuccessor_ = callSuccessor;
-    callSuccessor_->addCallPredecessor(this);
+bool CallNode::addDirectSuccessor(Node *callSuccessor) {
+    directSuccessors_.insert(callSuccessor);
+    callSuccessor->addCallPredecessor(this);
     return true;
 }
 
-Node *CallNode::getCallSuccessor() const { return callSuccessor_; }
+const std::set<Node *> &CallNode::getDirectSuccessors() const {
+    return directSuccessors_;
+}
 
 std::set<Node *> CallNode::directSuccessors() const {
-    if (callSuccessor_ == nullptr) {
-        return successors();
-    }
-    return { callSuccessor_ };
+    return directSuccessors_;
 }
 

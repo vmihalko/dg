@@ -4,14 +4,14 @@
 #include "Node.h"
 
 class CallNode : public Node {
-    Node *callSuccessor_;
+    std::set<Node *> directSuccessors_;
 
   public:
     CallNode(const llvm::Instruction *instruction = nullptr,
              const llvm::CallInst *callInst = nullptr);
 
-    bool setCallSuccessor(Node *callSuccessor);
-    Node *getCallSuccessor() const;
+    bool addDirectSuccessor(Node *callSuccessor);
+    const std::set<Node *> &getDirectSuccessors() const;
 
     std::set<Node *> directSuccessors() const override;
 };

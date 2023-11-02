@@ -41,7 +41,7 @@ GraphBuilder::~GraphBuilder() {
 void GraphBuilder::NodeSequence::addSuccessor(Node *successor) {
     if (callNode_ != nullptr) {
         CallNode *call = static_cast<CallNode *>(callNode_);
-        call->setCallSuccessor(successor);
+        call->addDirectSuccessor(successor);
     }
 
     second->addSuccessor(successor);
