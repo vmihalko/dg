@@ -11,9 +11,14 @@ class CallNode : public Node {
              const llvm::CallInst *callInst = nullptr);
 
     bool addDirectSuccessor(Node *callSuccessor);
-    const std::set<Node *> &getDirectSuccessors() const;
+
+    // FIXME: this is ugly; refactor the entire graph creation
+
+    inline bool isExtern() const { return directSuccessors_.empty(); }
 
     std::set<Node *> directSuccessors() const override;
+
+    EntryNode *getEntryNode() const;
 };
 
 #endif // CALLNODE_H
