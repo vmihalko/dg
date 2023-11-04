@@ -6,6 +6,7 @@
 
 int ThreadRegion::lastId = 0;
 
+ThreadRegion::ThreadRegion() : id_(lastId++) {}
 ThreadRegion::ThreadRegion(Node *node) : id_(lastId++), foundingNode_(node) {}
 
 int ThreadRegion::id() const { return id_; }
@@ -48,21 +49,62 @@ const std::set<ThreadRegion *> &ThreadRegion::successors() const {
 
 std::set<ThreadRegion *> ThreadRegion::successors() { return successors_; }
 
+void ThreadRegion::addDirectSuccessor(const ThreadRegion *region) {
+    directSuccessors_.insert(region);
+}
+
+void ThreadRegion::addCallSuccessor(const ThreadRegion *region) {
+    calledSuccessors_.insert(region);
+}
+
+void ThreadRegion::addForkedSuccessor(const ForkNode *forkNode,
+                                      const ThreadRegion *region) {
+    forkedSuccessors_.insert(std::make_pair(forkNode, region));
+}
+
+void ThreadRegion::setInterestingCallSuccessor(const ThreadRegion *region) {
+    interestingCallSuccessor_ = region;
+}
+
+const std::set<const ThreadRegion *> &ThreadRegion::directSuccessors() const {
+    return directSuccessors_;
+}
+
+const std::set<const ThreadRegion *> &ThreadRegion::calledSuccessors() const {
+    return calledSuccessors_;
+}
+
+const std::set<std::pair<const ForkNode *, const ThreadRegion *>> &
+ThreadRegion::forkedSuccessors() const {
+    return forkedSuccessors_;
+}
+
+const ThreadRegion *ThreadRegion::interestingCallSuccessor() const {
+    return interestingCallSuccessor_;
+}
+
 bool ThreadRegion::insertNode(Node *node) {
-    nodes_.insert(node);
+    nodes_.push_back(node);
     return false;
 }
 
-bool ThreadRegion::removeNode(Node *node) {
-    nodes_.erase(node);
-    return false;
-}
+Node *ThreadRegion::foundingNode() const { return firstNode(); }
 
-Node *ThreadRegion::foundingNode() const { return foundingNode_; }
+Node *ThreadRegion::firstNode() const {
+    if (nodes_.empty()) {
+        return nullptr;
+    }
 
-const std::set<Node *> &ThreadRegion::nodes() const { return nodes_; }
+    return nodes_[0];
+};
 
-std::set<Node *> ThreadRegion::nodes() { return nodes_; }
+Node *ThreadRegion::lastNode() const {
+    if (nodes_.empty()) {
+        return nullptr;
+    }
+
+    return nodes_.back();
+};
 
 void ThreadRegion::printNodes(std::ostream &ostream) {
     ostream << "subgraph " << dotName() << " {\n";
@@ -83,7 +125,9 @@ void ThreadRegion::printEdges(std::ostream &ostream) {
     }
 }
 
-std::string ThreadRegion::dotName() { return "cluster" + std::to_string(id_); }
+std::string ThreadRegion::dotName() const {
+    return "cluster_" + std::to_string(id_);
+}
 
 std::set<const llvm::Instruction *> ThreadRegion::llvmInstructions() const {
     std::set<const llvm::Instruction *> llvmValues;

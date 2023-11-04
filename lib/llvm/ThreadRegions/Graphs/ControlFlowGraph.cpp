@@ -47,7 +47,10 @@ void ControlFlowGraph::buildFunction(const llvm::Function *function) {
     }
 
     threadRegionsBuilder->reserve(graphBuilder->size());
-    threadRegionsBuilder->build(nodeSeq.first);
+
+    auto procedureEntries = graphBuilder->getProcedureEntries();
+    threadRegionsBuilder->build(static_cast<EntryNode *>(nodeSeq.first),
+                                procedureEntries);
 }
 
 void ControlFlowGraph::printWithRegions(std::ostream &ostream) const {
@@ -65,6 +68,10 @@ void ControlFlowGraph::printWithoutRegions(std::ostream &ostream) const {
     graphBuilder->print(ostream);
 }
 
-std::set<ThreadRegion *> ControlFlowGraph::threadRegions() {
-    return threadRegionsBuilder->threadRegions();
+ThreadRegion *ControlFlowGraph::mainEntryRegion() const {
+    return threadRegionsBuilder->entryRegion();
+}
+
+std::set<ThreadRegion *> ControlFlowGraph::allRegions() const {
+    return threadRegionsBuilder->allRegions();
 }

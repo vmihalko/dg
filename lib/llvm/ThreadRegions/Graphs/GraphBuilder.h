@@ -28,6 +28,7 @@ class ForkNode;
 class JoinNode;
 class LockNode;
 class UnlockNode;
+class EntryNode;
 class BlockGraph;
 class FunctionGraph;
 
@@ -92,6 +93,8 @@ class GraphBuilder {
     getCorrespondingForks(const llvm::CallInst *callInst) const;
 
     std::set<LockNode *> getLocks() const;
+
+    std::set<EntryNode *> getProcedureEntries() const;
 
     bool matchForksAndJoins();
 

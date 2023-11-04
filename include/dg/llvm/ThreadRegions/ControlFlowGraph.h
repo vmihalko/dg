@@ -49,7 +49,8 @@ class ControlFlowGraph {
 
     void printWithoutRegions(std::ostream &ostream) const;
 
-    std::set<ThreadRegion *> threadRegions();
+    ThreadRegion *mainEntryRegion() const;
+    std::set<ThreadRegion *> allRegions() const;
 };
 
 #endif // CONTROLFLOWGRAPH_H

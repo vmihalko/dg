@@ -278,6 +278,17 @@ std::set<LockNode *> GraphBuilder::getLocks() const {
     return locks;
 }
 
+
+std::set<EntryNode *> GraphBuilder::getProcedureEntries() const {
+    std::set<EntryNode *> res;
+
+    for (auto pair : llvmToFunctionMap_) {
+        res.insert(pair.second->entryNode());
+    }
+
+    return res;
+}
+
 bool GraphBuilder::matchForksAndJoins() {
     using namespace llvm;
     bool changed = false;
