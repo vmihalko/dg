@@ -148,8 +148,13 @@ ThreadRegion *ThreadRegionsBuilder::findOrCreateRegion(Node *node) {
 // ConcurrencyProcedureAnalysis class
 bool ThreadRegionsBuilder::isInteresting(Node *node) const {
     if (node->getType() == NodeType::CALL) {
-        return concurrencyProcedureAnalysis_->isInteresting(
-                static_cast<EntryNode *>(node));
+        auto *callNode = static_cast<CallNode *>(node);
+
+        if (callNode->isExtern()) {
+            return false;
+        }
+
+        return concurrencyProcedureAnalysis_->isInteresting(callNode->getEntryNode());
     }
 
     // IMPORTANT: if we want to consider a more complete MHP analysis, more
