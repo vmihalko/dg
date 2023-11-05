@@ -998,6 +998,7 @@ void LLVMDependenceGraph::computeInterferenceDependentEdges(
         ControlFlowGraph *controlFlowGraph) {
     auto *mainEntryRegion = controlFlowGraph->mainEntryRegion();
     MayHappenInParallel mayHappenInParallel(mainEntryRegion);
+    mayHappenInParallel.run();
 
     for (const auto &currentRegion : controlFlowGraph->allRegions()) {
         auto llvmValuesForCurrentRegion = currentRegion->llvmInstructions();
