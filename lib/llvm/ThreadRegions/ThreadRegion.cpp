@@ -116,12 +116,31 @@ void ThreadRegion::printNodes(std::ostream &ostream) {
 }
 
 void ThreadRegion::printEdges(std::ostream &ostream) {
-    for (const auto &successor : successors_) {
-        ostream << (*this->nodes_.begin())->dotName() << " -> "
-                << (*successor->nodes_.begin())->dotName()
+    for (const auto &successor : directSuccessors_) {
+        ostream << this->firstNode()->dotName() << " -> "
+                << successor->firstNode()->dotName()
                 << " [ltail = " << this->dotName()
                 << " lhead = " << successor->dotName()
                 << ", color = blue, style = bold]\n";
+    }
+
+    for (const auto &pair : forkedSuccessors_) {
+        const auto &successor = pair.second;
+        ostream << this->firstNode()->dotName() << " -> "
+                << successor->firstNode()->dotName()
+                << " [ltail = " << this->dotName()
+                << " lhead = " << successor->dotName()
+                << ", color = darkorchid, fontcolor = darkorchid, style = bold"
+                << ", label=\"forks\"]";
+    }
+
+    for (const auto &successor : calledSuccessors_) {
+        ostream << this->firstNode()->dotName() << " -> "
+                << successor->firstNode()->dotName()
+                << " [ltail = " << this->dotName()
+                << " lhead = " << successor->dotName()
+                << ", color = chocolate, fontcolor = chocolate, style = bold"
+                << ", label=\"calls\"]\n";
     }
 }
 

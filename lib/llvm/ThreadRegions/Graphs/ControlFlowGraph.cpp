@@ -53,13 +53,18 @@ void ControlFlowGraph::buildFunction(const llvm::Function *function) {
                                 procedureEntries);
 }
 
-void ControlFlowGraph::printWithRegions(std::ostream &ostream) const {
+void ControlFlowGraph::printWithRegions(std::ostream &ostream,
+                                        const MayHappenInParallel *mhp) const {
     ostream << "digraph \"Control Flow Graph\" {\n";
     ostream << "compound = true\n";
 
     threadRegionsBuilder->printNodes(ostream);
     graphBuilder->printEdges(ostream);
     threadRegionsBuilder->printEdges(ostream);
+
+    if (mhp != nullptr) {
+        mhp->printEdges(ostream);
+    }
 
     ostream << "}\n";
 }

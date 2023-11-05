@@ -2,6 +2,7 @@
 #define MAYHAPPENINPARALLEL_H
 
 #include <map>
+#include <ostream>
 #include <set>
 #include <utility>
 #include <vector>
@@ -26,6 +27,8 @@ class MayHappenInParallel {
 
     const std::set<const ThreadRegion *> &
     parallelRegions(const ThreadRegion *threadRegion);
+
+    void printEdges(std::ostream &ostream) const;
 
   private:
     // we do this to save space, as the MHP relation is symetric

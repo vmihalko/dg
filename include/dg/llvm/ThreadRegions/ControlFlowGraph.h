@@ -1,6 +1,7 @@
 #ifndef CONTROLFLOWGRAPH_H
 #define CONTROLFLOWGRAPH_H
 
+#include "dg/llvm/ThreadRegions/MayHappenInParallel.h"
 #include <memory>
 #include <set>
 
@@ -45,7 +46,8 @@ class ControlFlowGraph {
 
     void buildFunction(const llvm::Function *function);
 
-    void printWithRegions(std::ostream &ostream) const;
+    void printWithRegions(std::ostream &ostream,
+                          const MayHappenInParallel *mhp = nullptr) const;
 
     void printWithoutRegions(std::ostream &ostream) const;
 

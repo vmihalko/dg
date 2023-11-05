@@ -15,8 +15,6 @@ const std::set<const ThreadRegion *> MayHappenInParallel::emptyRegion_ = {};
 MayHappenInParallel::MayHappenInParallel(const ThreadRegion *rootRegion)
         : rootRegion_(rootRegion) {}
 
-using MHPRelation = std::pair<ThreadRegion, ThreadRegion>;
-
 void MayHappenInParallel::run() {
     MHPRelationGraph res = runAnalysis();
 
@@ -35,6 +33,27 @@ MayHappenInParallel::parallelRegions(const ThreadRegion *region) {
     }
 
     return mhpInfo_[region];
+}
+
+void MayHappenInParallel::printEdges(std::ostream &ostream) const {
+    for (const auto &pair : mhpInfo_) {
+        const ThreadRegion *region = pair.first;
+        const std::set<const ThreadRegion *> &successors = pair.second;
+
+        for (const auto *successor : successors) {
+            // we do not want to add the edges twice
+            if (successor < region) {
+                continue;
+            }
+
+            ostream << region->firstNode()->dotName() << " -> "
+                << successor->firstNode()->dotName()
+                << " [ltail = " << region->dotName()
+                << " lhead = " << successor->dotName()
+                << ", color = chartreuse, fontcolor = chartreuse, style = bold"
+                << ", label=\"MHP\"]";
+        }
+    }
 }
 
 // these are only the relations which are the immediate consequence of FORKs
