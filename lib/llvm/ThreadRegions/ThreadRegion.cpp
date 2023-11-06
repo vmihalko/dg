@@ -142,6 +142,15 @@ void ThreadRegion::printEdges(std::ostream &ostream) {
                 << ", color = chocolate, fontcolor = chocolate, style = bold"
                 << ", label=\"calls\"]\n";
     }
+
+    if (interestingCallSuccessor_ != nullptr) {
+       ostream << this->firstNode()->dotName() << " -> "
+                << interestingCallSuccessor_->firstNode()->dotName()
+                << " [ltail = " << this->dotName()
+                << " lhead = " << interestingCallSuccessor_->dotName()
+                << ", color = chocolate4, fontcolor = darkorchid, style = bold"
+                << ", label=\"calls (interesting)\"]";
+    }
 }
 
 std::string ThreadRegion::dotName() const {
