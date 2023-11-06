@@ -148,7 +148,7 @@ void ThreadRegion::printEdges(std::ostream &ostream) {
                 << interestingCallSuccessor_->firstNode()->dotName()
                 << " [ltail = " << this->dotName()
                 << " lhead = " << interestingCallSuccessor_->dotName()
-                << ", color = chocolate4, fontcolor = darkorchid, style = bold"
+                << ", color = chocolate4, fontcolor = chocolate4, style = bold"
                 << ", label=\"calls (interesting)\"]";
     }
 }
