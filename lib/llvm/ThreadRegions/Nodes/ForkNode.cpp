@@ -54,10 +54,12 @@ std::set<JoinNode *> ForkNode::correspondingJoins() {
     return correspondingJoins_;
 }
 
-void ForkNode::printOutcomingEdges(ostream &ostream) const {
-    Node::printOutcomingEdges(ostream);
-    for (const auto &forkSuccessor : forkSuccessors_) {
-        ostream << this->dotName() << " -> " << forkSuccessor->dotName()
-                << " [style=dashed]\n";
+void ForkNode::printOutcomingEdges(ostream &ostream, bool printOnlyDirect) const {
+    Node::printOutcomingEdges(ostream, printOnlyDirect);
+    if (!printOnlyDirect) {
+        for (const auto &forkSuccessor : forkSuccessors_) {
+            ostream << this->dotName() << " -> " << forkSuccessor->dotName()
+                    << " [style=dashed]\n";
+        }
     }
 }

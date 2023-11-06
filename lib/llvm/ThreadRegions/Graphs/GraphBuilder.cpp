@@ -365,12 +365,12 @@ void GraphBuilder::printNodes(std::ostream &ostream) const {
     }
 }
 
-void GraphBuilder::printEdges(std::ostream &ostream) const {
+void GraphBuilder::printEdges(std::ostream &ostream, bool printOnlyDirect) const {
     for (const auto &iterator : llvmToNodeMap_) {
-        iterator.second->printOutcomingEdges(ostream);
+        iterator.second->printOutcomingEdges(ostream, printOnlyDirect);
     }
     for (const auto &iterator : artificialNodes_) {
-        iterator->printOutcomingEdges(ostream);
+        iterator->printOutcomingEdges(ostream, printOnlyDirect);
     }
 }
 

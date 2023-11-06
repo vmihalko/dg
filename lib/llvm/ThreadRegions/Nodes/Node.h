@@ -109,7 +109,8 @@ class Node {
 
     std::string label() const;
 
-    virtual void printOutcomingEdges(std::ostream &ostream) const;
+    virtual void printOutcomingEdges(std::ostream &ostream,
+                                     bool printOnlyDirect = false) const;
 };
 
 #endif // NODE_H

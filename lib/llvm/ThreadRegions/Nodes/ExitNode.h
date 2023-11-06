@@ -25,7 +25,8 @@ class ExitNode : public Node {
 
     std::set<Node *> directSuccessors() const override;
 
-    void printOutcomingEdges(std::ostream &ostream) const override;
+    void printOutcomingEdges(std::ostream &ostream,
+                             bool printOnlyDirect = false) const override;
 
     friend class JoinNode;
 };

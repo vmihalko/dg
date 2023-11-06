@@ -104,7 +104,7 @@ class GraphBuilder {
 
     void printNodes(std::ostream &ostream) const;
 
-    void printEdges(std::ostream &ostream) const;
+    void printEdges(std::ostream &ostream, bool printOnlyDirect = false) const;
 
     void clear();
 

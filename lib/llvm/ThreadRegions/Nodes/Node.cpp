@@ -127,9 +127,11 @@ string Node::label() const {
     return label_;
 }
 
-void Node::printOutcomingEdges(ostream &ostream) const {
-    for (const auto &successor : successors_) {
-        ostream << this->dotName() << " -> " << successor->dotName() << "\n";
+void Node::printOutcomingEdges(ostream &ostream, bool printOnlyDirect) const {
+    if (!printOnlyDirect) {
+        for (const auto &successor : successors_) {
+            ostream << this->dotName() << " -> " << successor->dotName() << "\n";
+        }
     }
 
     for (auto *directSuccessor : directSuccessors()) {
