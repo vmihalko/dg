@@ -165,7 +165,7 @@ ThreadRegionsBuilder::buildUninterestingProcedure(const EntryNode *entryNode) {
 
     std::set<Node *> seenNodes;
     std::vector<const Node *> unexplored = {entryNode};
-    ExitNode *exitNode;
+    ExitNode *exitNode = nullptr;
 
     region->insertNode(entryNode);
     nodeToRegionMap_[entryNode] = region;
@@ -204,6 +204,13 @@ ThreadRegionsBuilder::buildUninterestingProcedure(const EntryNode *entryNode) {
                 region->addCallSuccessor(findOrCreateRegion(entry));
             }
         }
+    }
+
+    // if there is an infinte cycle, the exit node is not reachable; we
+    // do not need to consider it in the MHP analysis, as the node
+    // never happens in parallel with anything
+    if (exitNode == nullptr) {
+        return region;
     }
 
     // the exit node must be pushed last, because it will be the last node
