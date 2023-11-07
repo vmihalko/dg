@@ -20,7 +20,7 @@ void ThreadRegionsBuilder::build(
         auto *region = worklist_.back();
         worklist_.pop_back();
 
-        auto *lastNode = region->lastNode();
+        const auto *lastNode = region->lastNode();
         auto successorNodes = lastNode->directSuccessors();
 
         while (!regionIsComplete(lastNode, successorNodes)) {
@@ -103,7 +103,7 @@ void ThreadRegionsBuilder::insertNodeIntoRegion(ThreadRegion *region,
              concurrencyProcedureAnalysis_->mayCallForks(procedureEntry)) {
             for (auto *forkedProcedureEntry : forkNode->forkSuccessors()) {
                 auto *forkedRegion = findOrCreateRegion(forkedProcedureEntry);
-                region->addForkedSuccessor(forkNode, forkedRegion);
+                region->addForkedSuccessor(forkedRegion);
             }
         }
     }
@@ -113,7 +113,7 @@ void ThreadRegionsBuilder::insertNodeIntoRegion(ThreadRegion *region,
 
         for (auto *forkedProcedureEntry : forkNode->forkSuccessors()) {
             auto *forkedRegion = findOrCreateRegion(forkedProcedureEntry);
-            region->addForkedSuccessor(forkNode, forkedRegion);
+            region->addForkedSuccessor(forkedRegion);
         }
     }
 }
@@ -142,9 +142,9 @@ ThreadRegion *ThreadRegionsBuilder::findOrCreateRegion(Node *node) {
 
 // FIXME: there is some duplication - somethink like this also exists in the
 // ConcurrencyProcedureAnalysis class
-bool ThreadRegionsBuilder::isInteresting(Node *node) const {
+bool ThreadRegionsBuilder::isInteresting(const Node *node) const {
     if (node->getType() == NodeType::CALL) {
-        auto *callNode = static_cast<CallNode *>(node);
+        const auto *callNode = static_cast<const CallNode *>(node);
 
         if (callNode->isExtern()) {
             return false;
@@ -218,7 +218,7 @@ ThreadRegionsBuilder::buildUninterestingProcedure(EntryNode *entryNode) {
 // IMPORTANT: if we start considering joins, then a new region
 // will also need to be created before every join node
 bool ThreadRegionsBuilder::regionIsComplete(
-        Node *lastNode, std::set<Node *> &successors) const {
+        const Node *lastNode, std::set<Node *> &successors) const {
     if (isInteresting(lastNode)) {
         return true;
     }

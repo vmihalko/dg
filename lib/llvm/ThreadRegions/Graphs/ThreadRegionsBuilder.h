@@ -52,9 +52,10 @@ class ThreadRegionsBuilder {
 
     void insertNodeIntoRegion(ThreadRegion *region, Node *node);
     ThreadRegion *findOrCreateRegion(Node *node);
-    bool isInteresting(Node *node) const;
+    bool isInteresting(const Node *node) const;
     ThreadRegion *buildUninterestingProcedure(EntryNode *entryNode);
-    bool regionIsComplete(Node *lastNode, std::set<Node *> &successors) const;
+    bool regionIsComplete(const Node *lastNode,
+                          std::set<Node *> &successors) const;
 };
 
 #endif // THREADREGIONSBUILDER_H

@@ -49,18 +49,17 @@ void MayHappenInParallel::printEdges(std::ostream &ostream) const {
             }
 
             ostream << region->firstNode()->dotName() << " -> "
-                << successor->firstNode()->dotName()
-                << " [ltail = " << region->dotName()
-                << " lhead = " << successor->dotName()
-                << ", color = chartreuse, fontcolor = chartreuse, style = bold"
-                << ", label=\"MHP\"]";
+                    << successor->firstNode()->dotName()
+                    << " [ltail = " << region->dotName()
+                    << " lhead = " << successor->dotName()
+                    << ", color = chartreuse, fontcolor = chartreuse, style = "
+                       "bold"
+                    << ", label=\"MHP\"]";
         }
     }
 }
 
-size_t MayHappenInParallel::countRelations() const {
-    return relationCount_;
-}
+size_t MayHappenInParallel::countRelations() const { return relationCount_; }
 
 // these are only the relations which are the immediate consequence of FORKs
 MayHappenInParallel::MHPRelationGraph
@@ -80,9 +79,9 @@ MayHappenInParallel::findInitialMHP() const {
             }
         }
 
-        for (auto pair : current->forkedSuccessors()) {
+        for (const auto *forkSucc : current->forkedSuccessors()) {
             for (const auto *succ : current->directSuccessors()) {
-                res.insert(createMHPPair(succ, pair.second));
+                res.insert(createMHPPair(succ, forkSucc));
             }
         }
 
@@ -122,9 +121,9 @@ MayHappenInParallel::MHPRelationGraph MayHappenInParallel::runAnalysis() const {
             for (const auto *succ : first->directSuccessors()) {
                 updateMHPGraph(mhp, worklist, createMHPPair(succ, second));
 
-                for (auto pair : first->forkedSuccessors()) {
+                for (const auto *forkSucc : first->forkedSuccessors()) {
                     updateMHPGraph(mhp, worklist,
-                                   createMHPPair(succ, pair.second));
+                                   createMHPPair(succ, forkSucc));
                 }
             }
 
@@ -138,8 +137,8 @@ MayHappenInParallel::MHPRelationGraph MayHappenInParallel::runAnalysis() const {
                                createMHPPair(interestingSucc, second));
             }
 
-            for (auto pair : first->forkedSuccessors()) {
-                updateMHPGraph(mhp, worklist, createMHPPair(pair.second, second));
+            for (const auto *succ : first->forkedSuccessors()) {
+                updateMHPGraph(mhp, worklist, createMHPPair(succ, second));
             }
 
             std::swap(first, second);
