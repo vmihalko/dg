@@ -151,7 +151,7 @@ int main(int argc, char *argv[]) {
                << "Maximum possible number of MHP relations between "
                   "instructions: "
                << maximumInstructionRelationCount << '\n'
-               << "Number of MHP relations between regions calculated: "
+               << "Number of MHP relations between instructions calculated: "
                << actualInstructionRelationCount << '\n'
                << "Percentage of MHP relations between instructions removed: "
                << percentageRemovedInstructions << '\n';
