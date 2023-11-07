@@ -28,7 +28,7 @@ class ThreadRegionsBuilder {
                     std::make_unique<ConcurrencyProcedureAnalysis>();
 
     std::vector<std::unique_ptr<ThreadRegion>> threadRegions_;
-    std::unordered_map<Node *, ThreadRegion *> nodeToRegionMap_;
+    std::unordered_map<const Node *, ThreadRegion *> nodeToRegionMap_;
 
     std::vector<ThreadRegion *> worklist_;
 
@@ -48,14 +48,12 @@ class ThreadRegionsBuilder {
     std::set<ThreadRegion *> allRegions() const;
 
   private:
-    // FIXME: add consts where they belong
-
-    void insertNodeIntoRegion(ThreadRegion *region, Node *node);
-    ThreadRegion *findOrCreateRegion(Node *node);
+    void insertNodeIntoRegion(ThreadRegion *region, const Node *node);
+    ThreadRegion *findOrCreateRegion(const Node *node);
     bool isInteresting(const Node *node) const;
-    ThreadRegion *buildUninterestingProcedure(EntryNode *entryNode);
+    ThreadRegion *buildUninterestingProcedure(const EntryNode *entryNode);
     bool regionIsComplete(const Node *lastNode,
-                          std::set<Node *> &successors) const;
+                          const std::set<Node *> &successors) const;
 };
 
 #endif // THREADREGIONSBUILDER_H

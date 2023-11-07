@@ -77,12 +77,12 @@ std::set<ThreadRegion *> ThreadRegionsBuilder::allRegions() const {
 void clear() {}
 
 void ThreadRegionsBuilder::insertNodeIntoRegion(ThreadRegion *region,
-                                                Node *node) {
+                                                const Node *node) {
     region->insertNode(node);
     nodeToRegionMap_[node] = region;
 
     if (node->getType() == NodeType::CALL) {
-        CallNode *callNode = static_cast<CallNode *>(node);
+        const CallNode *callNode = static_cast<const CallNode *>(node);
         EntryNode *procedureEntry = callNode->getEntryNode();
 
         // it is an extern procedure, we do not analyze it
@@ -109,7 +109,7 @@ void ThreadRegionsBuilder::insertNodeIntoRegion(ThreadRegion *region,
     }
 
     if (node->getType() == NodeType::FORK) {
-        ForkNode *forkNode = static_cast<ForkNode *>(node);
+        const ForkNode *forkNode = static_cast<const ForkNode *>(node);
 
         for (auto *forkedProcedureEntry : forkNode->forkSuccessors()) {
             auto *forkedRegion = findOrCreateRegion(forkedProcedureEntry);
@@ -118,13 +118,13 @@ void ThreadRegionsBuilder::insertNodeIntoRegion(ThreadRegion *region,
     }
 }
 
-ThreadRegion *ThreadRegionsBuilder::findOrCreateRegion(Node *node) {
+ThreadRegion *ThreadRegionsBuilder::findOrCreateRegion(const Node *node) {
     if (nodeToRegionMap_.find(node) != nodeToRegionMap_.end()) {
         return nodeToRegionMap_.at(node);
     }
 
     if (node->getType() == NodeType::ENTRY) {
-        EntryNode *entryNode = static_cast<EntryNode *>(node);
+        const EntryNode *entryNode = static_cast<const EntryNode *>(node);
 
         if (!concurrencyProcedureAnalysis_->isInteresting(entryNode)) {
             return buildUninterestingProcedure(entryNode);
@@ -140,8 +140,6 @@ ThreadRegion *ThreadRegionsBuilder::findOrCreateRegion(Node *node) {
     return regionPtr;
 }
 
-// FIXME: there is some duplication - somethink like this also exists in the
-// ConcurrencyProcedureAnalysis class
 bool ThreadRegionsBuilder::isInteresting(const Node *node) const {
     if (node->getType() == NodeType::CALL) {
         const auto *callNode = static_cast<const CallNode *>(node);
@@ -161,19 +159,19 @@ bool ThreadRegionsBuilder::isInteresting(const Node *node) const {
 }
 
 ThreadRegion *
-ThreadRegionsBuilder::buildUninterestingProcedure(EntryNode *entryNode) {
+ThreadRegionsBuilder::buildUninterestingProcedure(const EntryNode *entryNode) {
     threadRegions_.push_back(std::make_unique<ThreadRegion>());
     ThreadRegion *region = threadRegions_.back().get();
 
     std::set<Node *> seenNodes;
-    std::vector<Node *> unexplored = {entryNode};
+    std::vector<const Node *> unexplored = {entryNode};
     ExitNode *exitNode;
 
     region->insertNode(entryNode);
     nodeToRegionMap_[entryNode] = region;
 
     while (!unexplored.empty()) {
-        auto *current = unexplored.back();
+        const auto *current = unexplored.back();
         unexplored.pop_back();
 
         for (auto *successor : current->directSuccessors()) {
@@ -218,7 +216,7 @@ ThreadRegionsBuilder::buildUninterestingProcedure(EntryNode *entryNode) {
 // IMPORTANT: if we start considering joins, then a new region
 // will also need to be created before every join node
 bool ThreadRegionsBuilder::regionIsComplete(
-        const Node *lastNode, std::set<Node *> &successors) const {
+        const Node *lastNode, const std::set<Node *> &successors) const {
     if (isInteresting(lastNode)) {
         return true;
     }
