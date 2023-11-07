@@ -25,7 +25,7 @@ class ThreadRegion {
     std::set<const ThreadRegion *> calledSuccessors_;
     std::set<std::pair<const ForkNode *, const ThreadRegion *>>
             forkedSuccessors_;
-    const ThreadRegion *interestingCallSuccessor_;
+    const ThreadRegion *interestingCallSuccessor_ = nullptr;
 
     static int lastId;
 
