@@ -2,8 +2,6 @@
 #include "EntryNode.h"
 #include "JoinNode.h"
 
-#include "dg/llvm/ThreadRegions/ControlFlowGraph.h"
-
 #include <iostream>
 
 using namespace std;

@@ -1,14 +1,8 @@
 #include "dg/llvm/ThreadRegions/MayHappenInParallel.h"
-#include "llvm/ThreadRegions/Nodes/Node.h"
 
-#include <llvm/IR/CFG.h>
-
-#include <algorithm>
-#include <cassert>
-#include <iostream>
-#include <set>
-#include <utility>
 #include <vector>
+
+#include "llvm/ThreadRegions/Nodes/Node.h"
 
 const std::set<const ThreadRegion *> MayHappenInParallel::emptyRegion_ = {};
 

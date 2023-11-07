@@ -5,7 +5,6 @@
 #include <ostream>
 #include <set>
 #include <utility>
-#include <vector>
 
 #include "ThreadRegion.h"
 
