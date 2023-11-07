@@ -76,16 +76,13 @@ int main(int argc, char *argv[]) {
 
     auto opts = CommandLineOptions(inputFile, outputFile, outputFormat);
 
-    std::string moduleFile = inputFile;
-    std::string outputFileName = outputFile;
-
     llvm::LLVMContext context;
     llvm::SMDiagnostic SMD;
 
     std::unique_ptr<Module> M = llvm::parseIRFile(opts.inputFile, SMD, context);
 
     if (!M) {
-        llvm::errs() << "Failed parsing '" << moduleFile << "' file:\n";
+        llvm::errs() << "Failed parsing '" << opts.inputFile << "' file:\n";
         SMD.print(argv[0], errs());
         return 1;
     }
@@ -163,7 +160,7 @@ int main(int argc, char *argv[]) {
                << actualRelationCount << ',' << percentageRemoved
                << instructionCount << ',' << maximumInstructionRelationCount
                << ',' << actualInstructionRelationCount << ','
-               << percentageRemovedInstructions;
+               << percentageRemovedInstructions << '\n';
     }
 
     return 0;
