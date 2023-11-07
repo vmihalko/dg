@@ -94,7 +94,7 @@ class GraphBuilder {
 
     std::set<LockNode *> getLocks() const;
 
-    std::set<EntryNode *> getProcedureEntries() const;
+    std::set<const EntryNode *> getProcedureEntries() const;
 
     bool matchForksAndJoins();
 

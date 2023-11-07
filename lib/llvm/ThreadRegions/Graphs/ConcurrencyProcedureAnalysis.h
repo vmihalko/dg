@@ -3,7 +3,8 @@
 
 #include "llvm/ThreadRegions/Nodes/Nodes.h"
 #include <llvm/IR/Value.h>
-#include <map>
+#include <memory>
+#include <unordered_map>
 
 class ControlFlowGraphAnalysis;
 
@@ -28,24 +29,19 @@ class ConcurrencyProcedureAnalysis {
         friend ConcurrencyProcedureAnalysis;
     };
 
-    // FIXME: use a unique pointer for procedure info, use an
-    // unordered map
-    std::map<const EntryNode *, ProcedureInfo> procedureInfos_;
-
-    ConcurrencyProcedureAnalysis(std::set<EntryNode *> procedures);
-    void run();
+    std::unordered_map<const EntryNode *, std::unique_ptr<ProcedureInfo>>
+            procedureInfos_;
 
   public:
-    static ConcurrencyProcedureAnalysis
-    constructAndRun(std::set<EntryNode *> procedures);
-
-    ConcurrencyProcedureAnalysis();
+    ConcurrencyProcedureAnalysis() = default;
+    void run(const std::set<const EntryNode *> &procedures);
 
     // An interesting function calls a pthread* function, or
     // calls an interesting function
     bool isInteresting(const EntryNode *procedure) const;
 
-    const std::set<const EntryNode *> &mayCallProcedures(const EntryNode *procedure) const;
+    const std::set<const EntryNode *> &
+    mayCallProcedures(const EntryNode *procedure) const;
 
     // maybe return a reference ... depends on implementation
     const std::set<const ForkNode *> &

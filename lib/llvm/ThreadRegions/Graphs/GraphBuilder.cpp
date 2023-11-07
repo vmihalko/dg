@@ -279,8 +279,8 @@ std::set<LockNode *> GraphBuilder::getLocks() const {
 }
 
 
-std::set<EntryNode *> GraphBuilder::getProcedureEntries() const {
-    std::set<EntryNode *> res;
+std::set<const EntryNode *> GraphBuilder::getProcedureEntries() const {
+    std::set<const EntryNode *> res;
 
     for (auto pair : llvmToFunctionMap_) {
         res.insert(pair.second->entryNode());

@@ -9,14 +9,10 @@
 #include "llvm/ThreadRegions/Nodes/EntryNode.h"
 #include "llvm/ThreadRegions/Nodes/Node.h"
 
-ThreadRegionsBuilder::ThreadRegionsBuilder() : concurrencyProcedureAnalysis_(nullptr) {}
-
-void ThreadRegionsBuilder::build(EntryNode *mainEntry,
-                                 std::set<EntryNode *> &procedureEntries) {
-    concurrencyProcedureAnalysis_ =
-            std::make_unique<ConcurrencyProcedureAnalysis>(
-                    ConcurrencyProcedureAnalysis::constructAndRun(
-                            procedureEntries));
+void ThreadRegionsBuilder::build(
+        EntryNode *mainEntry,
+        const std::set<const EntryNode *> &procedureEntries) {
+    concurrencyProcedureAnalysis_->run(procedureEntries);
 
     findOrCreateRegion(mainEntry);
 
@@ -154,7 +150,8 @@ bool ThreadRegionsBuilder::isInteresting(Node *node) const {
             return false;
         }
 
-        return concurrencyProcedureAnalysis_->isInteresting(callNode->getEntryNode());
+        return concurrencyProcedureAnalysis_->isInteresting(
+                callNode->getEntryNode());
     }
 
     // IMPORTANT: if we want to consider a more complete MHP analysis, more

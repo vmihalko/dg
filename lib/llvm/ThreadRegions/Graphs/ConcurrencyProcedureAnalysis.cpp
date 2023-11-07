@@ -1,21 +1,12 @@
 #include "ConcurrencyProcedureAnalysis.h"
 #include <vector>
 
-ConcurrencyProcedureAnalysis::ConcurrencyProcedureAnalysis(
-        std::set<EntryNode *> procedures) {
-    for (auto *procedure : procedures) {
-        procedureInfos_[procedure] = {};
+void ConcurrencyProcedureAnalysis::run(
+        const std::set<const EntryNode *> &procedures) {
+    for (const auto *procedure : procedures) {
+        procedureInfos_[procedure] = std::make_unique<ProcedureInfo>();
     }
-}
 
-ConcurrencyProcedureAnalysis ConcurrencyProcedureAnalysis::constructAndRun(
-        std::set<EntryNode *> procedures) {
-    auto analysis = ConcurrencyProcedureAnalysis(procedures);
-    analysis.run();
-    return analysis;
-}
-
-void ConcurrencyProcedureAnalysis::run() {
     findUsedNodes();
 
     findDirectlyCalledProcedures();
@@ -29,7 +20,7 @@ void ConcurrencyProcedureAnalysis::run() {
 
 void ConcurrencyProcedureAnalysis::findUsedNodes() {
     for (auto &pair : procedureInfos_) {
-        std::set<const Node *> &usedNodes = pair.second.usedNodes_;
+        std::set<const Node *> &usedNodes = pair.second->usedNodes_;
         std::vector<const Node *> worklist = {pair.first};
 
         while (!worklist.empty()) {
@@ -48,7 +39,7 @@ void ConcurrencyProcedureAnalysis::findUsedNodes() {
 
 void ConcurrencyProcedureAnalysis::findDirectlyCalledProcedures() {
     for (auto &pair : procedureInfos_) {
-        for (const auto *node : pair.second.usedNodes_) {
+        for (const auto *node : pair.second->usedNodes_) {
             if (node->getType() == NodeType::CALL) {
                 const auto *callNode = static_cast<const CallNode *>(node);
 
@@ -62,7 +53,7 @@ void ConcurrencyProcedureAnalysis::findDirectlyCalledProcedures() {
                 // the `successors` method should return exactly one node; if a
                 // procedure is called via a function pointer, then a call node
                 // is created for every possible procedure
-                pair.second.directlyCalledProcedures_.insert(
+                pair.second->directlyCalledProcedures_.insert(
                         static_cast<const EntryNode *>(
                                 *callNode->successors().begin()));
             }
@@ -72,9 +63,9 @@ void ConcurrencyProcedureAnalysis::findDirectlyCalledProcedures() {
 
 void ConcurrencyProcedureAnalysis::findRecursivelyCalledProcedures() {
     for (auto &pair : procedureInfos_) {
-        pair.second.recursivelyCalledProcedures_.insert(
-                pair.second.directlyCalledProcedures_.begin(),
-                pair.second.directlyCalledProcedures_.end());
+        pair.second->recursivelyCalledProcedures_.insert(
+                pair.second->directlyCalledProcedures_.begin(),
+                pair.second->directlyCalledProcedures_.end());
     }
 
     bool changed = true;
@@ -83,12 +74,12 @@ void ConcurrencyProcedureAnalysis::findRecursivelyCalledProcedures() {
 
         for (auto &pair : procedureInfos_) {
             std::set<const EntryNode *> newlyAdded;
-            auto &current = pair.second.recursivelyCalledProcedures_;
+            auto &current = pair.second->recursivelyCalledProcedures_;
 
             for (const auto *calledProcedure : current) {
                 const auto &recCalledProcedures =
                         procedureInfos_[calledProcedure]
-                                .recursivelyCalledProcedures_;
+                                ->recursivelyCalledProcedures_;
                 for (const auto *recCalled : recCalledProcedures) {
                     if (current.find(recCalled) == current.end()) {
                         newlyAdded.insert(recCalled);
@@ -106,12 +97,12 @@ void ConcurrencyProcedureAnalysis::findRecursivelyCalledProcedures() {
 
 void ConcurrencyProcedureAnalysis::setInitialInteresting() {
     for (auto &pair : procedureInfos_) {
-        for (const auto *node : pair.second.usedNodes_) {
+        for (const auto *node : pair.second->usedNodes_) {
             // IMPORTANT: if we want to consider a more complete MHP analysis,
             // more nodes must be considered interesting, notably the join, lock
             // and unlock nodes
             if (node->getType() == NodeType::FORK) {
-                pair.second.isInteresting_ = true;
+                pair.second->isInteresting_ = true;
                 break;
             }
         }
@@ -129,16 +120,16 @@ void ConcurrencyProcedureAnalysis::setInteresting() {
         changed = false;
 
         for (auto &pair : procedureInfos_) {
-            if (pair.second.isInteresting_) {
+            if (pair.second->isInteresting_) {
                 continue;
             }
 
-            const auto &recCalled = pair.second.recursivelyCalledProcedures_;
+            const auto &recCalled = pair.second->recursivelyCalledProcedures_;
 
             for (const auto &calledProc : recCalled) {
                 if (isInteresting(calledProc)) {
                     changed = true;
-                    pair.second.isInteresting_ = true;
+                    pair.second->isInteresting_ = true;
                     break;
                 }
             }
@@ -148,13 +139,13 @@ void ConcurrencyProcedureAnalysis::setInteresting() {
 
 void ConcurrencyProcedureAnalysis::findDirectlyCalledForks() {
     for (auto &pair : procedureInfos_) {
-        if (!pair.second.isInteresting_) {
+        if (!pair.second->isInteresting_) {
             continue;
         }
 
-        for (const auto *node : pair.second.usedNodes_) {
+        for (const auto *node : pair.second->usedNodes_) {
             if (node->getType() == NodeType::FORK) {
-                pair.second.directlyCalledForks_.insert(
+                pair.second->directlyCalledForks_.insert(
                         static_cast<const ForkNode *>(node));
             }
         }
@@ -164,25 +155,25 @@ void ConcurrencyProcedureAnalysis::findDirectlyCalledForks() {
 // FIXME: this method has a high cognitive complexity, it could be refatctored
 void ConcurrencyProcedureAnalysis::findAllCalledForks() {
     for (auto &pair : procedureInfos_) {
-        if (!pair.second.isInteresting_) {
+        if (!pair.second->isInteresting_) {
             continue;
         }
 
-        pair.second.calledForks_.insert(
-                pair.second.directlyCalledForks_.begin(),
-                pair.second.directlyCalledForks_.end());
+        pair.second->calledForks_.insert(
+                pair.second->directlyCalledForks_.begin(),
+                pair.second->directlyCalledForks_.end());
     }
 
     for (auto &pair : procedureInfos_) {
-        if (!pair.second.isInteresting_) {
+        if (!pair.second->isInteresting_) {
             continue;
         }
 
         for (const auto *calledProcedure :
-             pair.second.recursivelyCalledProcedures_) {
-            pair.second.calledForks_.insert(
-                    procedureInfos_[calledProcedure].calledForks_.begin(),
-                    procedureInfos_[calledProcedure].calledForks_.end());
+             pair.second->recursivelyCalledProcedures_) {
+            pair.second->calledForks_.insert(
+                    procedureInfos_[calledProcedure]->calledForks_.begin(),
+                    procedureInfos_[calledProcedure]->calledForks_.end());
         }
     }
 
@@ -191,19 +182,19 @@ void ConcurrencyProcedureAnalysis::findAllCalledForks() {
         changed = false;
 
         for (auto &pair : procedureInfos_) {
-            if (!pair.second.isInteresting_) {
+            if (!pair.second->isInteresting_) {
                 continue;
             }
 
             std::set<const ForkNode *> newlyAdded;
-            auto &current = pair.second.calledForks_;
+            auto &current = pair.second->calledForks_;
 
             for (const auto *node : current) {
                 const auto *forkNode = static_cast<const ForkNode *>(node);
 
                 for (const auto *entryNode : forkNode->forkSuccessors()) {
                     for (const auto *otherFork :
-                         procedureInfos_[entryNode].calledForks_) {
+                         procedureInfos_[entryNode]->calledForks_) {
                         if (current.find(otherFork) == current.end()) {
                             newlyAdded.insert(otherFork);
                         }
@@ -221,10 +212,10 @@ void ConcurrencyProcedureAnalysis::findAllCalledForks() {
 
 bool ConcurrencyProcedureAnalysis::isInteresting(
         const EntryNode *procedure) const {
-    return procedureInfos_.at(procedure).isInteresting_;
+    return procedureInfos_.at(procedure)->isInteresting_;
 }
 
 const std::set<const ForkNode *> &
 ConcurrencyProcedureAnalysis::mayCallForks(const EntryNode *procedure) const {
-    return procedureInfos_.at(procedure).calledForks_;
+    return procedureInfos_.at(procedure)->calledForks_;
 }

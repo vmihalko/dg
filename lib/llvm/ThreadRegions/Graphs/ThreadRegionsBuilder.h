@@ -23,18 +23,20 @@
 //       full procedure can become a single thread region
 class ThreadRegionsBuilder {
   private:
-    std::unique_ptr<ConcurrencyProcedureAnalysis> concurrencyProcedureAnalysis_;
+    std::unique_ptr<ConcurrencyProcedureAnalysis>
+            concurrencyProcedureAnalysis_ =
+                    std::make_unique<ConcurrencyProcedureAnalysis>();
 
     std::vector<std::unique_ptr<ThreadRegion>> threadRegions_;
     std::unordered_map<Node *, ThreadRegion *> nodeToRegionMap_;
 
     std::vector<ThreadRegion *> worklist_;
 
-
   public:
-    ThreadRegionsBuilder();
+    ThreadRegionsBuilder() = default;
 
-    void build(EntryNode *mainEntry, std::set<EntryNode *> &procedureEntries);
+    void build(EntryNode *mainEntry,
+               const std::set<const EntryNode *> &procedureEntries);
 
     void printNodes(std::ostream &ostream) const;
     void printEdges(std::ostream &ostream) const;
@@ -46,7 +48,6 @@ class ThreadRegionsBuilder {
     std::set<ThreadRegion *> allRegions() const;
 
   private:
-
     // FIXME: add consts where they belong
 
     void insertNodeIntoRegion(ThreadRegion *region, Node *node);
