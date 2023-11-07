@@ -17,6 +17,7 @@ class MayHappenInParallel {
 
     const ThreadRegion *rootRegion_;
     std::map<const ThreadRegion *, std::set<const ThreadRegion *>> mhpInfo_;
+    size_t relationCount_ = 0;
 
     static const std::set<const ThreadRegion *> emptyRegion_;
 
@@ -29,6 +30,7 @@ class MayHappenInParallel {
     parallelRegions(const ThreadRegion *threadRegion);
 
     void printEdges(std::ostream &ostream) const;
+    size_t countRelations() const;
 
   private:
     // we do this to save space, as the MHP relation is symetric

@@ -23,6 +23,8 @@ void MayHappenInParallel::run() {
         mhpInfo_[pair.first].insert(pair.second);
         mhpInfo_[pair.second].insert(pair.first);
     }
+
+    relationCount_ = res.size();
 }
 
 const std::set<const ThreadRegion *> &
@@ -54,6 +56,10 @@ void MayHappenInParallel::printEdges(std::ostream &ostream) const {
                 << ", label=\"MHP\"]";
         }
     }
+}
+
+size_t MayHappenInParallel::countRelations() const {
+    return relationCount_;
 }
 
 // these are only the relations which are the immediate consequence of FORKs
