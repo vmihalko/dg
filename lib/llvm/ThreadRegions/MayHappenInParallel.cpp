@@ -65,7 +65,7 @@ size_t MayHappenInParallel::countRelations() const { return relationCount_; }
 MayHappenInParallel::MHPRelationGraph
 MayHappenInParallel::findInitialMHP() const {
     std::vector<const ThreadRegion *> worklist = {rootRegion_};
-    std::set<const ThreadRegion *> visited = {};
+    std::set<const ThreadRegion *> visited = {rootRegion_};
     MHPRelationGraph res = {};
 
     while (!worklist.empty()) {
@@ -98,17 +98,20 @@ MayHappenInParallel::findInitialMHP() const {
     return res;
 }
 
-MayHappenInParallel::MHPRelationGraph MayHappenInParallel::refineMHP(
-        MayHappenInParallel::MHPRelationGraph mhpGraph) const {
-    // may be refined in the future by considering mutexes
-    return mhpGraph;
-}
-
 MayHappenInParallel::MHPRelationGraph MayHappenInParallel::runAnalysis() const {
     auto mhp = findInitialMHP();
     std::vector<MHPPair> worklist;
 
     worklist.insert(worklist.end(), mhp.begin(), mhp.end());
+
+    auto updateMHPGraph = [&](const ThreadRegion *first,
+                              const ThreadRegion *second) {
+        auto pair = createMHPPair(first, second);
+        if (mhp.find(pair) == mhp.end()) {
+            mhp.insert(pair);
+            worklist.push_back(pair);
+        }
+    };
 
     while (!worklist.empty()) {
         auto current = worklist.back();
@@ -119,40 +122,29 @@ MayHappenInParallel::MHPRelationGraph MayHappenInParallel::runAnalysis() const {
 
         for (int i = 0; i < 2; i++) {
             for (const auto *succ : first->directSuccessors()) {
-                updateMHPGraph(mhp, worklist, createMHPPair(succ, second));
+                updateMHPGraph(succ, second);
 
                 for (const auto *forkSucc : first->forkedSuccessors()) {
-                    updateMHPGraph(mhp, worklist,
-                                   createMHPPair(succ, forkSucc));
+                    updateMHPGraph(succ, forkSucc);
                 }
             }
 
             for (const auto *callSucc : first->calledSuccessors()) {
-                updateMHPGraph(mhp, worklist, createMHPPair(callSucc, second));
+                updateMHPGraph(callSucc, second);
             }
 
             const auto *interestingSucc = first->interestingCallSuccessor();
             if (interestingSucc != nullptr) {
-                updateMHPGraph(mhp, worklist,
-                               createMHPPair(interestingSucc, second));
+                updateMHPGraph(interestingSucc, second);
             }
 
             for (const auto *succ : first->forkedSuccessors()) {
-                updateMHPGraph(mhp, worklist, createMHPPair(succ, second));
+                updateMHPGraph(succ, second);
             }
 
             std::swap(first, second);
         }
     }
 
-    return refineMHP(mhp);
-}
-
-void MayHappenInParallel::updateMHPGraph(
-        MayHappenInParallel::MHPRelationGraph &mhp,
-        std::vector<MHPPair> &worklist, MHPPair newPair) {
-    if (mhp.find(newPair) == mhp.end()) {
-        mhp.insert(newPair);
-        worklist.push_back(newPair);
-    }
+    return mhp;
 }
