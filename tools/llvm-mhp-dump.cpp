@@ -1,6 +1,7 @@
 #include "dg/llvm/PointerAnalysis/PointerAnalysis.h"
 #include "dg/llvm/ThreadRegions/ControlFlowGraph.h"
 #include "dg/llvm/ThreadRegions/MayHappenInParallel.h"
+#include "dg/llvm/ThreadRegions/ThreadRegion.h"
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
@@ -107,25 +108,62 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    // FIXME: this generates a set, which is not necessary; there should be a
-    // method to only count the regions
-    size_t regionCount = controlFlowGraph.allRegions().size();
+    std::set<ThreadRegion *> regions = controlFlowGraph.allRegions();
+
+    size_t regionCount = regions.size();
     size_t maximumRelationCount = regionCount * regionCount;
     size_t actualRelationCount = mhp.countRelations();
     double percentageRemoved = 100.0 - 100.0 * (double) actualRelationCount /
                                                (double) maximumRelationCount;
 
+    std::map<const ThreadRegion *, size_t> regionInstructionCount;
+    size_t instructionCount = 0;
+    size_t actualInstructionRelationCount = 0;
+
+    for (auto *region : regions) {
+        regionInstructionCount[region] = region->llvmInstructions().size();
+        instructionCount += regionInstructionCount[region];
+    }
+
+    size_t maximumInstructionRelationCount =
+            instructionCount * instructionCount;
+
+    for (auto *region : regions) {
+        for (const auto *mhpRegion : mhp.parallelRegions(region)) {
+            actualInstructionRelationCount +=
+                    regionInstructionCount[mhpRegion] *
+                    regionInstructionCount[region];
+        }
+    }
+
+    double percentageRemovedInstructions =
+            100.0 - 100.0 * (double) actualInstructionRelationCount /
+                            (double) maximumInstructionRelationCount;
+
     if (opts.outputFormat == OutputFormat::text) {
-        stream << "Regions constructed: " << regionCount << '\n'
-               << "Maximum possible number of MHP relations: "
+        stream << "Regions:\n"
+               << "Regions constructed: " << regionCount << '\n'
+               << "Maximum possible number of MHP relations between regions: "
                << maximumRelationCount << '\n'
                << "Number of MHP relations calculated: " << actualRelationCount
                << '\n'
                << "Percentage of MHP relations between regions removed: "
-               << percentageRemoved << '\n';
+               << percentageRemoved << "\n\n"
+               << "Instructions:\n"
+               << "Number of instructions: " << instructionCount << '\n'
+               << "Maximum possible number of MHP relations between "
+                  "instructions: "
+               << maximumInstructionRelationCount << '\n'
+               << "Number of MHP relations between regions calculated: "
+               << actualInstructionRelationCount << '\n'
+               << "Percentage of MHP relations between instructions removed: "
+               << percentageRemovedInstructions << '\n';
     } else {
         stream << regionCount << ',' << maximumRelationCount << ','
-               << actualRelationCount << ',' << percentageRemoved;
+               << actualRelationCount << ',' << percentageRemoved
+               << instructionCount << ',' << maximumInstructionRelationCount
+               << ',' << actualInstructionRelationCount << ','
+               << percentageRemovedInstructions;
     }
 
     return 0;
