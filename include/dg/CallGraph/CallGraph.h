@@ -17,6 +17,9 @@ class GenericCallGraph {
         std::vector<FuncNode *> _calls;
         std::vector<FuncNode *> _callers;
 
+        std::vector<FuncNode *> _forks;
+        std::vector<FuncNode *> _forkers;
+
         template <typename Cont>
         bool _contains(const FuncNode *x, const Cont &C) const {
             return dg::any_of(C, [x](FuncNode *s) { return s == x; });
@@ -31,6 +34,9 @@ class GenericCallGraph {
         bool calls(const FuncNode *x) const { return _contains(x, _calls); }
         bool isCalledBy(FuncNode *x) const { return _contains(x, _callers); }
 
+        bool forks(const FuncNode *x) const { return _contains(x, _forks); }
+        bool isForkedBy(const FuncNode *x) const { return _contains(x, _forkers); }
+
         unsigned getID() const { return _id; }
         unsigned getSCCId() const { return _scc_id; }
         void setSCCId(unsigned id) { _scc_id = id; }
@@ -44,10 +50,22 @@ class GenericCallGraph {
             return true;
         }
 
+        bool addFork(FuncNode *x) {
+            if (forks(x))
+                return false;
+            _forks.push_Back(x);
+            if (!x->isForkedBy(this))
+                x->_forkers.push_back(this);
+            return true;
+        }
+
         const std::vector<FuncNode *> &getCalls() const { return _calls; }
         // alias for getCalls()
         const std::vector<FuncNode *> &successors() const { return getCalls(); }
         const std::vector<FuncNode *> &getCallers() const { return _callers; }
+
+        const std::vector<FuncNode *> &getForks() const { return _forks; }
+        const std::vector<FuncNode *> &getForkers() const { return _forkers; }
 
         const ValueT &getValue() const { return value; };
     };
@@ -76,6 +94,13 @@ class GenericCallGraph {
         auto A = getOrCreate(a);
         auto B = getOrCreate(b);
         return A->addCall(B);
+    }
+
+    // a calls pthread_create with b as argument
+    bool addFork(const ValueT &a, const ValueT &b) {
+        auto A = getOrCreate(a);
+        auto B = getOrCreate(b);
+        return A->addFork(B);
     }
 
     const FuncNode *get(const ValueT &v) const {
