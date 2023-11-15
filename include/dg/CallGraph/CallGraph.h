@@ -53,7 +53,7 @@ class GenericCallGraph {
         bool addFork(FuncNode *x) {
             if (forks(x))
                 return false;
-            _forks.push_Back(x);
+            _forks.push_back(x);
             if (!x->isForkedBy(this))
                 x->_forkers.push_back(this);
             return true;
