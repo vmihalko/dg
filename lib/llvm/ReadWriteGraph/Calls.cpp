@@ -359,6 +359,8 @@ RWNode *LLVMReadWriteGraphBuilder::createPthreadCreateCalls(
     Value *calledValue = CInst->getArgOperand(2);
     const auto &functions = getCalledFunctions(calledValue, PTA);
 
+    RWNodeFork *forkNode = RWNodeFork::get(rootNode);
+
     for (const Function *function : functions) {
         if (function->isDeclaration()) {
             llvm::errs()
@@ -366,7 +368,12 @@ RWNode *LLVMReadWriteGraphBuilder::createPthreadCreateCalls(
                     << function->getName() << "\n";
             continue;
         }
+
+        auto *s = getSubgraph(function);
+        assert(s && "Do not have a subgraph for a function");
+        forkNode->addForkee(s);
     }
+
     return rootNode;
 }
 

@@ -55,6 +55,7 @@ class RWSubgraph {
     friend class ReadWriteGraph;
 
     std::vector<RWNode *> _callers;
+    std::vector<RWNode *> _forkers;
 
     // for debugging
     std::string name;
@@ -79,6 +80,10 @@ class RWSubgraph {
         return dg::any_of(_callers, [c](RWNode *tmp) { return tmp == c; });
     }
 
+    bool hasForker(RWNode *f) const {
+        return dg::any_of(_forkers, [f](RWNode *tmp) { return tmp == f; });
+    }
+
     void splitBBlocksOnCalls();
     void addCaller(RWNode *c) {
         assert(c->getType() == RWNodeType::CALL);
@@ -88,8 +93,19 @@ class RWSubgraph {
         _callers.push_back(c);
     }
 
+    void addForker(RWNode *f) {
+        assert(f->getType() == RWNodeType::FORK);
+        if (hasForker(f)) {
+            return;
+        }
+        _forkers.push_back(f);
+    }
+
     std::vector<RWNode *> &getCallers() { return _callers; }
     const std::vector<RWNode *> &getCallers() const { return _callers; }
+
+    std::vector<RWNode *> &getForkers() { return _forkers; }
+    const std::vector<RWNode *> &getForkers() const { return _forkers; }
 
     const BBlocksVecT &getBBlocks() const { return _bblocks; }
 
