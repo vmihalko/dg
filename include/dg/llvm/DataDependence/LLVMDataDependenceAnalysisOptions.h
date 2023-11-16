@@ -46,6 +46,14 @@ struct LLVMDataDependenceAnalysisOptions : public LLVMAnalysisOptions,
         functionModelAddUse("strcpy", {1, Offset(0), Offset::getUnknown()});
         functionModelAddDef("strncpy", {0, Offset(0), 2});
         functionModelAddUse("strncpy", {1, Offset(0), 2});
+
+        ///
+        // Mutexes
+        ///
+        functionModelAddDef("pthread_mutex_init",
+                            {0, Offset(0), Offset::getUnknown()});
+        functionModelAddDef("pthread_mutex_destroy",
+                            {0, Offset(0), Offset::getUnknown()});
     };
 };
 
