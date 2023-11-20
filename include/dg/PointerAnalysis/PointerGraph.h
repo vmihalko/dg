@@ -204,6 +204,7 @@ class PointerGraph {
     }
 
     bool registerCall(PSNode *a, PSNode *b) { return callGraph.addCall(a, b); }
+    bool registerFork(PSNode *a, PSNode *b) { return callGraph.addFork(a, b); }
 
     GenericCallGraph<PSNode *> &getCallGraph() { return callGraph; }
     const GenericCallGraph<PSNode *> &getCallGraph() const { return callGraph; }

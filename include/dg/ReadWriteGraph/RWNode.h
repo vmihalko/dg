@@ -454,6 +454,41 @@ class RWNodeCall : public RWNode {
 #endif
 };
 
+class RWNodeFork : public RWNode {
+    // what this fork may fork
+    using ForkeesT = std::vector<RWCalledValue>;
+
+    ForkeesT forkees;
+
+  public:
+    RWNodeFork(unsigned id) : RWNode(id, RWNodeType::FORK) {}
+
+    static RWNodeFork *get(RWNode *n) {
+        return n->getType() == RWNodeType::FORK ? static_cast<RWNodeFork *>(n)
+                                                : nullptr;
+    }
+
+    static const RWNodeFork *get(const RWNode *n) {
+        return n->getType() == RWNodeType::FORK ? static_cast<const RWNodeFork *>(n)
+                                                : nullptr;
+    }
+
+    RWCalledValue *getSingleForkee() {
+        return (forkees.size() == 1) ? &forkees[0] : nullptr;
+    }
+
+    const RWCalledValue *getSingleForkee() const {
+        return (forkees.size() == 1) ? &forkees[0] : nullptr;
+    }
+
+    const ForkeesT &getForkees() const { return forkees; }
+    ForkeesT &getForkees() { return forkees; }
+
+    void addForkee(const RWCalledValue &cv) { forkees.push_back(cv); }
+    void addForkee(RWNode *n) { forkees.emplace_back(n); }
+    void addForkee(RWSubgraph *s);
+};
+
 } // namespace dda
 } // namespace dg
 

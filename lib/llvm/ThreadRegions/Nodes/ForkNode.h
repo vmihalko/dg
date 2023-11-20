@@ -28,7 +28,8 @@ class ForkNode : public Node {
     const std::set<JoinNode *> &correspondingJoins() const;
     std::set<JoinNode *> correspondingJoins();
 
-    void printOutcomingEdges(std::ostream &ostream) const override;
+    void printOutcomingEdges(std::ostream &ostream,
+                             bool printOnlyDirect = false) const override;
 
     friend class EntryNode;
     friend class JoinNode;

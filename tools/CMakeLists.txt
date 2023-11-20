@@ -140,6 +140,10 @@ endif (HAVE_SVF)
         target_link_libraries(llvm-thread-regions-dump PRIVATE dgllvmthreadregions
                                                        PRIVATE ${llvm_irreader})
 
+        add_executable(llvm-mhp-dump llvm-mhp-dump.cpp)
+        target_link_libraries(llvm-mhp-dump PRIVATE dgllvmthreadregions
+                                            PRIVATE ${llvm_irreader})
+
         add_executable(llvm-ntscd-dump llvm-ntscd-dump.cpp)
         target_link_libraries(llvm-ntscd-dump PRIVATE dgllvmcda
 	                                      PRIVATE ${llvm_analysis}

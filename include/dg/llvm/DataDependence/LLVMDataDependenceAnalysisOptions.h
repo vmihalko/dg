@@ -47,8 +47,19 @@ struct LLVMDataDependenceAnalysisOptions : public LLVMAnalysisOptions,
         functionModelAddDef("strncpy", {0, Offset(0), 2});
         functionModelAddUse("strncpy", {1, Offset(0), 2});
 
-	functionModelDefinesAllArgs("__isoc99_fscanf");
-	functionModelDefinesAllArgs("fscanf");
+        ///
+        // Mutexes
+        ///
+        functionModelAddDef("pthread_mutex_init",
+                            {0, Offset(0), Offset::getUnknown()});
+        functionModelAddDef("pthread_mutex_destroy",
+                            {0, Offset(0), Offset::getUnknown()});
+
+        ///
+        // fscanf
+        ///
+        functionModelDefinesAllArgs("__isoc99_fscanf");
+        functionModelDefinesAllArgs("fscanf");
     };
 };
 

@@ -383,6 +383,8 @@ void MemorySSATransformation::fillDefinitionsFromCall(Definitions &D,
 
 // get all callers of the function and find the given definitions reaching these
 // call-sites
+// also get all forkers of the function and find the given definition reaching
+// these fork-sites
 void MemorySSATransformation::findDefinitionsFromCalledFun(RWNode *phi,
                                                            RWSubgraph *subg,
                                                            const DefSite &ds) {
@@ -397,6 +399,21 @@ void MemorySSATransformation::findDefinitionsFromCalledFun(RWNode *phi,
         auto *callphi = createPhi(ds, RWNodeType::CALLIN);
         bblock->insertBefore(callphi, C);
         C->addInput(callphi);
+
+        phi->addDefUse(callphi);
+        callphi->addDefUse(findDefinitions(callphi, ds));
+    }
+
+    for (auto *forksite : subg->getForkers()) {
+        auto *F = RWNodeFork::get(forksite);
+        assert(F && "Forksite is not a fork");
+
+        auto *bblock = forksite->getBBlock();
+        assert(bblock);
+
+        // not sure if CALLIN is the thing to use, but it works
+        auto *callphi = createPhi(ds, RWNodeType::CALLIN);
+        bblock->insertBefore(callphi, F);
 
         phi->addDefUse(callphi);
         callphi->addDefUse(findDefinitions(callphi, ds));

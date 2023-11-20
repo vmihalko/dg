@@ -141,6 +141,7 @@ PSNodeFork *LLVMPointerGraphBuilder::createForkNode(const llvm::CallInst *CInst,
 
     const Value *spawnedFunc = CInst->getArgOperand(2)->stripPointerCasts();
     if (const Function *func = dyn_cast<Function>(spawnedFunc)) {
+        PS.registerFork(getPointsToNode(CInst->getParent()->getParent()), getPointsToNode(func));
         addFunctionToFork(getNodes(func)->getSingleNode(), forkNode);
     }
 
