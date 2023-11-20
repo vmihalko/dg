@@ -67,6 +67,11 @@ void RWNodeCall::addCallee(RWSubgraph *s) {
     s->addCaller(this);
 }
 
+void RWNodeFork::addForkee(RWSubgraph *s) {
+    forkees.emplace_back(s);
+    s->addForker(this);
+}
+
 void ReadWriteGraph::removeUselessNodes() {}
 
 void RWSubgraph::buildBBlocks(bool /*dce*/) {

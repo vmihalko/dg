@@ -91,10 +91,11 @@ add_library(dgllvmthreadregions SHARED
             llvm/ThreadRegions/Graphs/BlockGraph.cpp
             llvm/ThreadRegions/Graphs/FunctionGraph.cpp
             llvm/ThreadRegions/Graphs/GraphBuilder.cpp
+            llvm/ThreadRegions/Graphs/ConcurrencyProcedureAnalysis.cpp
             llvm/ThreadRegions/Graphs/ThreadRegionsBuilder.cpp
             llvm/ThreadRegions/Graphs/CriticalSectionsBuilder.cpp
             llvm/ThreadRegions/Graphs/ControlFlowGraph.cpp
-	    llvm/ThreadRegions/ThreadRegion.cpp
+            llvm/ThreadRegions/ThreadRegion.cpp
             llvm/ThreadRegions/MayHappenInParallel.cpp
 )
 target_link_libraries(dgllvmthreadregions PUBLIC dgllvmpta

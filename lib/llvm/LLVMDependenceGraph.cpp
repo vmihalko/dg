@@ -996,10 +996,11 @@ void LLVMDependenceGraph::computeNonTerminationControlDependencies() {
 
 void LLVMDependenceGraph::computeInterferenceDependentEdges(
         ControlFlowGraph *controlFlowGraph) {
-    auto regions = controlFlowGraph->threadRegions();
-    MayHappenInParallel mayHappenInParallel(regions);
+    auto *mainEntryRegion = controlFlowGraph->mainEntryRegion();
+    MayHappenInParallel mayHappenInParallel(mainEntryRegion);
+    mayHappenInParallel.run();
 
-    for (const auto &currentRegion : regions) {
+    for (const auto &currentRegion : controlFlowGraph->allRegions()) {
         auto llvmValuesForCurrentRegion = currentRegion->llvmInstructions();
         auto currentRegionLoads =
                 getLoadInstructions(llvmValuesForCurrentRegion);
