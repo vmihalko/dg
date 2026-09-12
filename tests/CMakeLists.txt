@@ -90,7 +90,18 @@ file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/sanitizer_test.c"
            "int main(int argc, char* argv[]) {}")
 execute_process(COMMAND "${CLANG}" "-fsanitize=address,undefined"
                         "${CMAKE_CURRENT_BINARY_DIR}/sanitizer_test.c"
+                        "-o" "${CMAKE_CURRENT_BINARY_DIR}/sanitizer_test"
                 RESULT_VARIABLE EXIT_CODE)
+
+# Accepting the flag is not enough, the runtime has to work as well: clang 11
+# compiles this happily but the resulting binary aborts at startup against
+# glibc 2.35 with "AddressSanitizer failed to allocate 0x0 (0) bytes of
+# SetAlternateSignalStack" (llvm/llvm-project#55785). Run it before believing
+# the sanitizers are usable.
+if(EXIT_CODE EQUAL 0)
+    execute_process(COMMAND "${CMAKE_CURRENT_BINARY_DIR}/sanitizer_test"
+                    RESULT_VARIABLE EXIT_CODE)
+endif()
 
 if(EXIT_CODE EQUAL 0)
     set(CLANG_HAS_SANITIZERS ON CACHE BOOL
